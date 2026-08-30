@@ -1,5 +1,14 @@
-node_modules/
-dist/
-.env
-coverage/
+# Shared repository files
 TechDojo_Technical_Assignment.pdf
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/.env.local
+frontend/.vercel/
+
+# Backend
+backend/node_modules/
+backend/dist/
+backend/.env
+backend/coverage/
