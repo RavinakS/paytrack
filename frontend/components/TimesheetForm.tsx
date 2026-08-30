@@ -1,13 +1,15 @@
-"use client";
+﻿"use client";
 
-import { FormLine } from "../lib/types";
+import { ApiWorker, FormLine } from "../lib/types";
 
 type TimesheetFormProps = {
   workerId: string;
   weekEnding: string;
   advanceRepaymentRequestedPence: string;
   lines: FormLine[];
+  workers: ApiWorker[];
   isCreating: boolean;
+  isLoadingWorkers: boolean;
   error: string | null;
   onWorkerIdChange: (value: string) => void;
   onWeekEndingChange: (value: string) => void;
@@ -23,7 +25,9 @@ export function TimesheetForm({
   weekEnding,
   advanceRepaymentRequestedPence,
   lines,
+  workers,
   isCreating,
+  isLoadingWorkers,
   error,
   onWorkerIdChange,
   onWeekEndingChange,
@@ -39,12 +43,21 @@ export function TimesheetForm({
 
       <div className="form-grid">
         <label>
-          Worker ID
-          <input
+          Worker
+          <select
             value={workerId}
             onChange={(event) => onWorkerIdChange(event.target.value)}
-            placeholder="Use the worker ID from your seeded database"
-          />
+            disabled={isLoadingWorkers || workers.length === 0}
+          >
+            <option value="">
+              {isLoadingWorkers ? "Loading workers..." : "Select a worker"}
+            </option>
+            {workers.map((worker) => (
+              <option key={worker.id} value={worker.id}>
+                {worker.name} ({worker.cisStatus})
+              </option>
+            ))}
+          </select>
         </label>
 
         <label>
@@ -139,7 +152,12 @@ export function TimesheetForm({
       </div>
 
       <div className="actions">
-        <button type="button" className="primary-button" onClick={onCreate} disabled={isCreating}>
+        <button
+          type="button"
+          className="primary-button"
+          onClick={onCreate}
+          disabled={isCreating || !workerId || isLoadingWorkers}
+        >
           {isCreating ? "Creating..." : "Create timesheet"}
         </button>
       </div>

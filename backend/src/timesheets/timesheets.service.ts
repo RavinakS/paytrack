@@ -16,6 +16,17 @@ import { TransitionTimesheetDto } from "./dto/transition-timesheet.dto";
 export class TimesheetsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async findAllWorkers() {
+    return this.prisma.worker.findMany({
+      select: {
+        id: true,
+        name: true,
+        cisStatus: true,
+      },
+      orderBy: { name: "asc" },
+    });
+  }
+
   async create(dto: CreateTimesheetDto) {
     if (new Date(dto.weekEnding).getUTCDay() !== 0) {
       throw new BadRequestException("Week ending must be a Sunday.");

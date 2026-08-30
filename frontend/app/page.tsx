@@ -1,14 +1,20 @@
 ﻿"use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TimesheetForm } from "../components/TimesheetForm";
 import { TimesheetSummary } from "../components/TimesheetSummary";
-import { apiFetch, transitionMap } from "../lib/api";
-import { ApiTimesheetResponse, FormLine, TimesheetStatus } from "../lib/types";
+import { apiFetch, getWorkers, transitionMap } from "../lib/api";
+import {
+  ApiTimesheetResponse,
+  ApiWorker,
+  FormLine,
+  TimesheetStatus,
+} from "../lib/types";
 import { makeLine } from "../lib/utils";
 
 export default function Home() {
-  const [workerId, setWorkerId] = useState("cmtckbsr30000vh6w0pa1rknw");
+  const [workers, setWorkers] = useState<ApiWorker[]>([]);
+  const [workerId, setWorkerId] = useState("");
   const [weekEnding, setWeekEnding] = useState("2026-08-09");
   const [advanceRepaymentRequestedPence, setAdvanceRepaymentRequestedPence] =
     useState("15000");
@@ -20,6 +26,30 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isLoadingWorkers, setIsLoadingWorkers] = useState(false);
+
+  useEffect(() => {
+    const loadWorkers = async () => {
+      try {
+        setIsLoadingWorkers(true);
+        const nextWorkers = await getWorkers();
+        setWorkers(nextWorkers);
+        if (nextWorkers.length > 0 && !workerId) {
+          setWorkerId(nextWorkers[0].id);
+        }
+      } catch (loadError) {
+        setError(
+          loadError instanceof Error
+            ? loadError.message
+            : "Unable to load workers.",
+        );
+      } finally {
+        setIsLoadingWorkers(false);
+      }
+    };
+
+    loadWorkers();
+  }, []);
 
   const nextTransitions = useMemo(() => {
     if (!data) return [];
@@ -122,7 +152,9 @@ export default function Home() {
         weekEnding={weekEnding}
         advanceRepaymentRequestedPence={advanceRepaymentRequestedPence}
         lines={lines}
+        workers={workers}
         isCreating={isCreating}
+        isLoadingWorkers={isLoadingWorkers}
         error={error}
         onWorkerIdChange={setWorkerId}
         onWeekEndingChange={setWeekEnding}

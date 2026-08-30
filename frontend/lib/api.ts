@@ -1,4 +1,4 @@
-import { ApiTimesheetResponse, TimesheetStatus } from "./types";
+import { ApiTimesheetResponse, ApiWorker, TimesheetStatus } from "./types";
 
 export const transitionMap: Record<TimesheetStatus, TimesheetStatus[]> = {
   DRAFT: ["SUBMITTED"],
@@ -8,7 +8,10 @@ export const transitionMap: Record<TimesheetStatus, TimesheetStatus[]> = {
   PAID: [],
 };
 
-export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
+export async function apiFetch<T>(
+  path: string,
+  options: RequestInit = {},
+): Promise<T> {
   const response = await fetch(`/api${path}`, {
     ...options,
     headers: {
@@ -17,13 +20,21 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
     },
   });
 
-  const payload = await response.json().catch(() => ({ message: response.statusText }));
+  const payload = await response
+    .json()
+    .catch(() => ({ message: response.statusText }));
 
   if (!response.ok) {
-    throw new Error(payload?.message ?? payload?.error ?? "The request failed.");
+    throw new Error(
+      payload?.message ?? payload?.error ?? "The request failed.",
+    );
   }
 
   return payload as T;
+}
+
+export async function getWorkers(): Promise<ApiWorker[]> {
+  return apiFetch<ApiWorker[]>("/timesheets/workers");
 }
 
 export async function getTimesheet(id: string): Promise<ApiTimesheetResponse> {
