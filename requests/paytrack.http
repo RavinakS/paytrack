@@ -1,0 +1,109 @@
+@baseUrl = http://localhost:3001
+
+# Seeded worker: Asha Patel (NET_VERIFIED)
+# If you reset the database, replace this with Asha's newly generated Worker.id.
+@workerId = cmtckbsr30000vh6w0pa1rknw
+
+### Create a timesheet with standard hours, overtime, materials, and an advance
+# @name createTimesheet
+POST {{baseUrl}}/timesheets
+Content-Type: application/json
+
+{
+  "workerId": "{{workerId}}",
+  "weekEnding": "2026-08-09",
+  "advanceRepaymentRequestedPence": 15000,
+  "lines": [
+    {
+      "date": "2026-08-03",
+      "kind": "LABOUR",
+      "quantity": 24,
+      "unit": "hour",
+      "ratePence": 2150
+    },
+    {
+      "date": "2026-08-05",
+      "kind": "LABOUR",
+      "quantity": 21.5,
+      "unit": "hour",
+      "ratePence": 1975
+    },
+    {
+      "date": "2026-08-05",
+      "kind": "MATERIALS",
+      "quantity": 4,
+      "unit": "each",
+      "ratePence": 1250
+    }
+  ]
+}
+
+### Get the created timesheet and its calculated breakdown
+# Expected: labour 99497, materials 5000, gross 104497, CIS 19899, net pay 69598 pence.
+GET {{baseUrl}}/timesheets/{{createTimesheet.response.body.$.id}}
+
+### Submit the draft
+POST {{baseUrl}}/timesheets/{{createTimesheet.response.body.$.id}}/transition
+Content-Type: application/json
+
+{
+  "to": "SUBMITTED"
+}
+
+### Approve the submitted timesheet
+POST {{baseUrl}}/timesheets/{{createTimesheet.response.body.$.id}}/transition
+Content-Type: application/json
+
+{
+  "to": "APPROVED"
+}
+
+### Mark the approved timesheet as paid
+POST {{baseUrl}}/timesheets/{{createTimesheet.response.body.$.id}}/transition
+Content-Type: application/json
+
+{
+  "to": "PAID"
+}
+
+### Expected 409: a paid timesheet is immutable
+POST {{baseUrl}}/timesheets/{{createTimesheet.response.body.$.id}}/transition
+Content-Type: application/json
+
+{
+  "to": "SUBMITTED"
+}
+
+### Create an empty draft
+# @name createEmptyDraft
+POST {{baseUrl}}/timesheets
+Content-Type: application/json
+
+{
+  "workerId": "{{workerId}}",
+  "weekEnding": "2026-08-16",
+  "advanceRepaymentRequestedPence": 0,
+  "lines": []
+}
+
+### Expected 409: an empty timesheet cannot leave DRAFT
+POST {{baseUrl}}/timesheets/{{createEmptyDraft.response.body.$.id}}/transition
+Content-Type: application/json
+
+{
+  "to": "SUBMITTED"
+}
+
+### Expected 400: weekEnding must be a Sunday
+POST {{baseUrl}}/timesheets
+Content-Type: application/json
+
+{
+  "workerId": "{{workerId}}",
+  "weekEnding": "2026-08-08",
+  "advanceRepaymentRequestedPence": 0,
+  "lines": []
+}
+
+### Expected 404: unknown timesheet
+GET {{baseUrl}}/timesheets/not-a-real-timesheet-id

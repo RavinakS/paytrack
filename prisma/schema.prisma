@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CisStatus {
+  GROSS
+  NET_VERIFIED
+  UNMATCHED
+}
+
+enum TimesheetStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+  PAID
+}
+
+enum LineKind {
+  LABOUR
+  MATERIALS
+  EXPENSE
+}
+
+model Worker {
+  id        String   @id @default(cuid())
+  name      String
+  cisStatus CisStatus
+  timesheets Timesheet[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name])
+}
+
+model Timesheet {
+  id                              String          @id @default(cuid())
+  workerId                        String
+  worker                          Worker          @relation(fields: [workerId], references: [id])
+  weekEnding                      DateTime        @db.Date
+  status                          TimesheetStatus @default(DRAFT)
+  advanceRepaymentRequestedPence  Int             @default(0)
+  lines                           TimesheetLine[]
+  createdAt                       DateTime        @default(now())
+  updatedAt                       DateTime        @updatedAt
+
+  @@index([workerId])
+}
+
+model TimesheetLine {
+  id          String   @id @default(cuid())
+  timesheetId String
+  timesheet   Timesheet @relation(fields: [timesheetId], references: [id], onDelete: Cascade)
+  date        DateTime @db.Date
+  kind        LineKind
+  quantity    Decimal  @db.Decimal(10, 2)
+  unit        String
+  ratePence   Int
+  position    Int
+
+  @@index([timesheetId, date, position])
+}
