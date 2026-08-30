@@ -34,7 +34,7 @@ export async function apiFetch<T>(
 }
 
 export async function getWorkers(): Promise<ApiWorker[]> {
-  return apiFetch<ApiWorker[]>("/timesheets/workers");
+  return apiFetch<ApiWorker[]>("/workers");
 }
 
 export async function getTimesheet(id: string): Promise<ApiTimesheetResponse> {
