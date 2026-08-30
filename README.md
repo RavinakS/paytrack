@@ -13,7 +13,6 @@ This project implements the weekly pay timesheet requirement from the Tech Dojo 
 ```text
 paytrack/
 ├── README.md
-├── TechDojo_Technical_Assignment.pdf
 ├── backend/
 │   ├── .env.example
 │   ├── package.json
