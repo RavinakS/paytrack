@@ -20,11 +20,14 @@ export class TimesheetsService {
     if (new Date(dto.weekEnding).getUTCDay() !== 0) {
       throw new BadRequestException("Week ending must be a Sunday.");
     }
+
     const worker = await this.prisma.worker.findUnique({
       where: { id: dto.workerId },
     });
+
     if (!worker)
       throw new NotFoundException("The selected worker could not be found.");
+
     return this.prisma.timesheet.create({
       data: {
         workerId: dto.workerId,

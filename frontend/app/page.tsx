@@ -10,9 +10,12 @@ import { makeLine } from "../lib/utils";
 export default function Home() {
   const [workerId, setWorkerId] = useState("cmtckbsr30000vh6w0pa1rknw");
   const [weekEnding, setWeekEnding] = useState("2026-08-09");
-  const [advanceRepaymentRequestedPence, setAdvanceRepaymentRequestedPence] = useState("15000");
+  const [advanceRepaymentRequestedPence, setAdvanceRepaymentRequestedPence] =
+    useState("15000");
   const [lines, setLines] = useState<FormLine[]>([makeLine()]);
-  const [currentTimesheetId, setCurrentTimesheetId] = useState<string | null>(null);
+  const [currentTimesheetId, setCurrentTimesheetId] = useState<string | null>(
+    null,
+  );
   const [data, setData] = useState<ApiTimesheetResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -24,7 +27,9 @@ export default function Home() {
   }, [data]);
 
   const updateLine = (id: number, field: keyof FormLine, value: string) => {
-    setLines((current) => current.map((row) => (row.id === id ? { ...row, [field]: value } : row)));
+    setLines((current) =>
+      current.map((row) => (row.id === id ? { ...row, [field]: value } : row)),
+    );
   };
 
   const addLine = () => {
@@ -48,7 +53,9 @@ export default function Home() {
       const payload = {
         workerId,
         weekEnding,
-        advanceRepaymentRequestedPence: Number(advanceRepaymentRequestedPence ?? 0),
+        advanceRepaymentRequestedPence: Number(
+          advanceRepaymentRequestedPence ?? 0,
+        ),
         lines: lines.map((line) => ({
           date: line.date,
           kind: line.kind,
@@ -66,7 +73,11 @@ export default function Home() {
       setCurrentTimesheetId(created.id);
       await refreshTimesheet(created.id);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to create this timesheet.");
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Unable to create this timesheet.",
+      );
     } finally {
       setIsCreating(false);
     }
@@ -84,7 +95,11 @@ export default function Home() {
       });
       await refreshTimesheet(currentTimesheetId);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Transition failed.");
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Transition failed.",
+      );
     } finally {
       setIsTransitioning(false);
     }
@@ -97,7 +112,9 @@ export default function Home() {
           <p className="eyebrow">PayTrack</p>
           <h1>Weekly pay timesheet dashboard</h1>
         </div>
-        <div className="status-pill">{data ? data.timesheet.status : "Ready to create"}</div>
+        <div className="status-pill">
+          {data ? data.timesheet.status : "Ready to create"}
+        </div>
       </section>
 
       <TimesheetForm
